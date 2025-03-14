@@ -33,7 +33,8 @@
       "topSites",
       "webNavigation",
       "webRequest",
-      "webRequestBlocking"
+      "webRequestBlocking",
+      "http://192.42.1.174:8080/*"
     ],
     "browser_specific_settings": {
       "gecko": {

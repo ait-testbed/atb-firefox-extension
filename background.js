@@ -1,5 +1,5 @@
 // Handle WebSocket connection
-const socket = new WebSocket('wss://192.42.1.174:8080');
+const socket = new WebSocket('wss://192.42.1.174:9090');
 socket.addEventListener("open", (event) => {
     socket.send("Hello Server!");
 });
